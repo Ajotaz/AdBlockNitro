@@ -21,9 +21,12 @@ const MODES = {
 const DEFAULT_MODE = MODES.STRICT;
 
 chrome.runtime.onInstalled.addListener((details) => {
-    console.log('[Hartico AdBlocker] Instalado/Actualizado:', details.reason);
+    console.log('[AdBlockNitro] Instalado/Actualizado:', details.reason);
 
-    chrome.storage.local.get(['enabled', 'mode', 'siteSettings', 'stats', 'whitelist', 'blacklist'], (result) => {
+    chrome.storage.local.get([
+        'enabled', 'mode', 'siteSettings', 'stats',
+        'whitelist', 'blacklist', 'blocklistMode'
+    ], (result) => {
         if (result.enabled === undefined) {
             chrome.storage.local.set({ enabled: true });
         }
@@ -47,6 +50,9 @@ chrome.runtime.onInstalled.addListener((details) => {
         }
         if (!result.blacklist) {
             chrome.storage.local.set({ blacklist: [] });
+        }
+        if (result.blocklistMode === undefined) {
+            chrome.storage.local.set({ blocklistMode: false });
         }
     });
 });
@@ -91,6 +97,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return true;
     }
 
+    if (request.action === 'getBlocklistMode') {
+        chrome.storage.local.get(['blocklistMode'], (result) => {
+            sendResponse({ blocklistMode: result.blocklistMode === true });
+        });
+        return true;
+    }
+
+    if (request.action === 'setBlocklistMode') {
+        chrome.storage.local.set({ blocklistMode: request.blocklistMode }, () => {
+            notifyAllTabs({ action: 'blocklistModeChanged', blocklistMode: request.blocklistMode });
+            sendResponse({ success: true });
+        });
+        return true;
+    }
+
     if (request.action === 'getSiteSettings') {
         chrome.storage.local.get(['siteSettings'], (result) => {
             sendResponse(result.siteSettings || {});
@@ -111,18 +132,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 
     if (request.action === 'getCurrentSiteMode') {
-        chrome.storage.local.get(['mode', 'siteSettings', 'enabled', 'whitelist'], (result) => {
+        chrome.storage.local.get(['mode', 'siteSettings', 'enabled', 'whitelist', 'blacklist', 'blocklistMode'], (result) => {
             const domain = request.domain;
             const siteSettings = result.siteSettings || {};
             const siteMode = siteSettings[domain] || 'default';
             const whitelist = result.whitelist || [];
+            const blacklist = result.blacklist || [];
             const isWhitelisted = whitelist.some(d => domain === d || domain.endsWith('.' + d));
+            const isBlacklisted = blacklist.some(d => domain === d || domain.endsWith('.' + d));
             sendResponse({
                 globalMode: result.mode || DEFAULT_MODE,
                 siteMode: siteMode,
                 effectiveMode: siteMode === 'default' ? (result.mode || DEFAULT_MODE) : siteMode,
                 enabled: result.enabled !== false,
-                isWhitelisted: isWhitelisted
+                isWhitelisted: isWhitelisted,
+                isBlacklisted: isBlacklisted,
+                blocklistMode: result.blocklistMode === true
             });
         });
         return true;
@@ -165,7 +190,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'addToWhitelist') {
         chrome.storage.local.get(['whitelist'], (result) => {
             const list = result.whitelist || [];
-            const domain = request.domain.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+            const domain = normalizeDomain(request.domain);
             if (domain && !list.includes(domain)) {
                 list.push(domain);
                 chrome.storage.local.set({ whitelist: list }, () => {
@@ -173,7 +198,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     sendResponse({ success: true, list: list });
                 });
             } else {
-                sendResponse({ success: false, list: list, error: 'Ya existe o dominio inválido' });
+                sendResponse({ success: false, list: list, error: 'Ya existe o dominio invalido' });
             }
         });
         return true;
@@ -193,7 +218,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'addToBlacklist') {
         chrome.storage.local.get(['blacklist'], (result) => {
             const list = result.blacklist || [];
-            const domain = request.domain.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+            const domain = normalizeDomain(request.domain);
             if (domain && !list.includes(domain)) {
                 list.push(domain);
                 chrome.storage.local.set({ blacklist: list }, () => {
@@ -201,7 +226,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     sendResponse({ success: true, list: list });
                 });
             } else {
-                sendResponse({ success: false, list: list, error: 'Ya existe o dominio inválido' });
+                sendResponse({ success: false, list: list, error: 'Ya existe o dominio invalido' });
             }
         });
         return true;
@@ -218,6 +243,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return true;
     }
 });
+
+function normalizeDomain(raw) {
+    if (!raw) return '';
+    return raw.trim().toLowerCase()
+        .replace(/^https?:\/\//, '')
+        .replace(/^www\./, '')
+        .split('/')[0];
+}
 
 function notifyAllTabs(message) {
     chrome.tabs.query({}, (tabs) => {
@@ -236,13 +269,13 @@ async function applyMode(mode) {
 
         if (mode === MODES.STRICT) {
             enabledRulesets.push('ruleset_1');
-            console.log('[Hartico AdBlocker] Modo STRICT activado');
+            console.log('[AdBlockNitro] Modo STRICT activado');
         } else if (mode === MODES.RELAXED) {
             enabledRulesets.push('ruleset_1');
-            console.log('[Hartico AdBlocker] Modo RELAXED activado');
+            console.log('[AdBlockNitro] Modo RELAXED activado');
         } else if (mode === MODES.CUSTOM) {
             enabledRulesets.push('ruleset_1');
-            console.log('[Hartico AdBlocker] Modo CUSTOM activado');
+            console.log('[AdBlockNitro] Modo CUSTOM activado');
         }
 
         await chrome.declarativeNetRequest.updateEnabledRulesets({
@@ -250,7 +283,7 @@ async function applyMode(mode) {
             disableRulesetIds: disabledRulesets
         });
     } catch (e) {
-        console.error('[Hartico AdBlocker] Error aplicando modo:', e);
+        console.error('[AdBlockNitro] Error aplicando modo:', e);
     }
 }
 
@@ -260,18 +293,18 @@ async function updateRules(enabled) {
             await chrome.declarativeNetRequest.updateEnabledRulesets({
                 enableRulesetIds: ['ruleset_1']
             });
-            console.log('[Hartico AdBlocker] Reglas activadas');
+            console.log('[AdBlockNitro] Reglas activadas');
         } else {
             await chrome.declarativeNetRequest.updateEnabledRulesets({
                 disableRulesetIds: ['ruleset_1']
             });
-            console.log('[Hartico AdBlocker] Reglas desactivadas');
+            console.log('[AdBlockNitro] Reglas desactivadas');
         }
     } catch (e) {
-        console.error('[Hartico AdBlocker] Error actualizando reglas:', e);
+        console.error('[AdBlockNitro] Error actualizando reglas:', e);
     }
 }
 
 chrome.declarativeNetRequest.onRuleMatchedDebug?.addListener((info) => {
-    console.log('[Hartico AdBlocker] Request bloqueado:', info.request.url);
+    console.log('[AdBlockNitro] Request bloqueado:', info.request.url);
 });

@@ -7,9 +7,6 @@
    ║  See LICENSE for full terms.                                  ║
    ╚═══════════════════════════════════════════════════════════════╝ */
 
-/* === Hartico AdBlocker v1.0 - CSS de Ocultacion + Proteccion de Clicks === */
-/* SOLO selectores especificos de anuncios conocidos. NADA generico. */
-
 /* === Google Ads especificos === */
 .adsbygoogle,
 .adsbygoogle-noablate,
@@ -47,7 +44,7 @@ iframe[title="Advertisement"],
 [id*="google_ads"]:not([data-ved]):not(.g):not(.rg_i),
 [id*="__gtm"],
 
-/* Clases especificas de anuncios (NO genericas de 1 palabra) */
+/* Clases especificas de anuncios */
 .ad-wrapper,
 .ad-container,
 .ad-unit,
@@ -94,22 +91,7 @@ iframe[title="Advertisement"],
 .usercentrics-root,
 #usercentrics-root,
 .sourcepoint-modal,
-#sourcepoint-modal,
-
-/* Popups y overlays de anuncios */
-.popup[class*="ad"],
-.popunder[class*="ad"],
-.modal-ad,
-.ad-overlay,
-.overlay-ad,
-#popup[class*="ad"],
-#popunder[class*="ad"],
-
-/* Overlays vacios que bloquean clicks */
-div[style*="position: fixed"][style*="z-index"]:empty,
-div[style*="position: absolute"][style*="z-index"]:empty,
-div[style*="position:fixed"][style*="z-index"]:empty,
-div[style*="position:absolute"][style*="z-index"]:empty
+#sourcepoint-modal
 {
     display: none !important;
     visibility: hidden !important;

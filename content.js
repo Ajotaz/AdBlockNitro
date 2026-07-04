@@ -9,9 +9,6 @@
  * ╚═══════════════════════════════════════════════════════════════╝
  */
 
-// Hartico AdBlocker v1.0 - Content Script
-// Elimina anuncios dinamicos del DOM en tiempo real + proteccion de clicks
-
 (function() {
     'use strict';
 
@@ -26,7 +23,10 @@
     let siteMode = 'default';
     let isEnabled = true;
     let isWhitelisted = false;
+    let isBlacklisted = false;
+    let blocklistMode = false;
     let blockingActive = false;
+    let stateLoaded = false;
 
     let sessionAdsBlocked = 0;
     let sessionDomainsBlocked = new Set();
@@ -56,13 +56,6 @@
         'pagead2.googlesyndication.com', 'adservice.google.com', 'tpc.googlesyndication.com',
         'googleads.g.doubleclick.net', 'google-analytics.com',
         'clients2.google.com', 'clients3.google.com', 'clients4.google.com', 'clients5.google.com',
-    ];
-
-    const TRACKER_DOMAINS = [
-        'google-analytics.com', 'googletagmanager.com', 'connect.facebook.net',
-        'analytics.twitter.com', 'bat.bing.com', 'scorecardresearch.com',
-        'quantserve.com', 'moatads.com', 'adsafeprotected.com', 'iasds.net',
-        'doubleverify.com', 'id5-sync.com', 'eids.eu', 'tag.aticdn.net',
     ];
 
     const AD_SELECTORS = [
@@ -109,7 +102,7 @@
     const originalInsertBefore = Element.prototype.insertBefore;
 
     function log(...args) {
-        if (CONFIG.debug) console.log('[Hartico AdBlocker]', ...args);
+        if (CONFIG.debug) console.log('[AdBlockNitro]', ...args);
     }
 
     function isAdDomain(src) {
@@ -201,24 +194,6 @@
                 removed++;
             }
         }
-
-        document.querySelectorAll('div').forEach(div => {
-            if (isProtected(div)) return;
-            const style = window.getComputedStyle(div);
-            if (style.position === 'fixed' || style.position === 'absolute') {
-                const rect = div.getBoundingClientRect();
-                const isLarge = rect.width > window.innerWidth * 0.3 && rect.height > window.innerHeight * 0.3;
-                const isEmpty = div.children.length === 0 || div.textContent.trim().length === 0;
-                const hasPointerEvents = style.pointerEvents !== 'none';
-                if (isLarge && isEmpty && hasPointerEvents) {
-                    div.style.pointerEvents = 'none';
-                    if (div.children.length === 0 && div.textContent.trim().length === 0) {
-                        div.remove();
-                        removed++;
-                    }
-                }
-            }
-        });
 
         if (removed > 0) {
             log(`Eliminados ${removed} elementos`);
@@ -373,6 +348,7 @@
         periodicInterval = setInterval(() => {
             if (!blockingActive) {
                 clearInterval(periodicInterval);
+                periodicInterval = null;
                 return;
             }
             const removed = killAds();
@@ -380,6 +356,7 @@
                 retries++;
                 if (retries >= CONFIG.maxRetries) {
                     clearInterval(periodicInterval);
+                    periodicInterval = null;
                 }
             } else {
                 retries = 0;
@@ -395,49 +372,33 @@
     }
 
     let injectedStyle = null;
+    let injectedStyleId = 'abnitro-dynamic-css';
 
-    function injectClickProtectionCSS() {
+    async function injectDynamicCSS() {
         if (!blockingActive) return;
         if (injectedStyle) return;
-
-        const style = document.createElement('style');
-        const selectors = getActiveSelectors();
-        const selectorList = selectors.join(', ');
-
-        style.textContent = `
-            ${selectorList} {
-                display: none !important;
-                visibility: hidden !important;
-                opacity: 0 !important;
-                width: 0 !important;
-                height: 0 !important;
-                position: absolute !important;
-                z-index: -9999 !important;
-                pointer-events: none !important;
-            }
-            body > div[style*="position: fixed"][style*="z-index"]:empty,
-            body > div[style*="position: absolute"][style*="z-index"]:empty {
-                pointer-events: none !important;
-            }
-            main, main *, article, article *, section, section *,
-            .content, .content *, [role="main"], [role="main"] * {
-                pointer-events: auto !important;
-            }
-            img[src*="googleusercontent.com"], img[src*="gstatic.com"],
-            .rg_i, .YQ4gaf, .bRMDJf {
-                display: block !important; visibility: visible !important; opacity: 1 !important;
-                width: auto !important; height: auto !important;
-                position: static !important; z-index: auto !important; pointer-events: auto !important;
-            }
-        `;
-        (document.head || document.documentElement).appendChild(style);
-        injectedStyle = style;
+        try {
+            const url = chrome.runtime.getURL('inject.css');
+            const res = await fetch(url);
+            const cssText = await res.text();
+            const style = document.createElement('style');
+            style.id = injectedStyleId;
+            style.textContent = cssText;
+            (document.head || document.documentElement).appendChild(style);
+            injectedStyle = style;
+        } catch (e) {
+            log('Error cargando inject.css dinamicamente:', e);
+        }
     }
 
     function removeInjectedCSS() {
         if (injectedStyle && injectedStyle.parentNode) {
             injectedStyle.parentNode.removeChild(injectedStyle);
             injectedStyle = null;
+        }
+        const existing = document.getElementById(injectedStyleId);
+        if (existing && existing.parentNode) {
+            existing.parentNode.removeChild(existing);
         }
     }
 
@@ -450,7 +411,10 @@
                     siteMode = response.siteMode || 'default';
                     isEnabled = response.enabled !== false;
                     isWhitelisted = response.isWhitelisted === true;
-                    log('Estado cargado - enabled:', isEnabled, 'whitelisted:', isWhitelisted, 'mode:', currentMode);
+                    isBlacklisted = response.isBlacklisted === true;
+                    blocklistMode = response.blocklistMode === true;
+                    stateLoaded = true;
+                    log('Estado cargado - enabled:', isEnabled, 'blocklistMode:', blocklistMode, 'whitelisted:', isWhitelisted, 'blacklisted:', isBlacklisted, 'mode:', currentMode);
                 }
             }
         } catch (e) {
@@ -458,16 +422,29 @@
         }
     }
 
+    function shouldBlock() {
+        if (!isEnabled) return false;
+        if (blocklistMode) {
+            if (siteMode === 'allow') return false;
+            if (siteMode === 'block') return true;
+            return isBlacklisted;
+        }
+        if (siteMode === 'allow') return false;
+        if (siteMode === 'block') return true;
+        if (isWhitelisted) return false;
+        return true;
+    }
+
     function activateBlocking() {
         if (blockingActive) return;
         blockingActive = true;
         disableAdsByGoogle();
         interceptAppendChild();
-        injectClickProtectionCSS();
+        injectDynamicCSS();
         killAds();
         setupMutationObserver();
         setupPeriodicCleanup();
-        log('Bloqueo ACTIVADO');
+        log('Bloqueo ACTIVADO en', window.location.hostname);
     }
 
     function deactivateBlocking() {
@@ -477,26 +454,49 @@
         disconnectObserver();
         stopPeriodicCleanup();
         removeInjectedCSS();
-        log('Bloqueo DESACTIVADO');
+        log('Bloqueo DESACTIVADO en', window.location.hostname);
     }
 
     function updateBlockingState() {
-        if (isEnabled && !isWhitelisted && siteMode !== 'allow') {
+        if (shouldBlock()) {
             activateBlocking();
         } else {
             deactivateBlocking();
         }
     }
 
+    // === AUTO-WHITELIST: cuando el usuario pausa en esta pagina ===
+    function autoWhitelistCurrentSite() {
+        const domain = window.location.hostname;
+        if (!domain || domain === 'newtab' || domain === '') return;
+        try {
+            chrome.runtime.sendMessage({ action: 'addToWhitelist', domain }, (res) => {
+                if (res && res.success) {
+                    log('Auto-whitelist:', domain);
+                }
+            });
+        } catch (e) {}
+    }
+
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
         chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             if (request.action === 'stateChanged') {
+                const wasEnabled = isEnabled;
                 isEnabled = request.enabled;
+                // Si el usuario acaba de pausar (cambio de true a false), auto-whitelist
+                if (wasEnabled && !isEnabled) {
+                    autoWhitelistCurrentSite();
+                }
                 updateBlockingState();
                 sendResponse({ success: true });
             }
             if (request.action === 'modeChanged') {
                 currentMode = request.mode;
+                updateBlockingState();
+                sendResponse({ success: true });
+            }
+            if (request.action === 'blocklistModeChanged') {
+                blocklistMode = request.blocklistMode;
                 updateBlockingState();
                 sendResponse({ success: true });
             }
@@ -525,7 +525,7 @@
                 if (blockingActive) {
                     killAds();
                     disableAdsByGoogle();
-                    injectClickProtectionCSS();
+                    injectDynamicCSS();
                 }
             });
         }
@@ -538,7 +538,7 @@
             }
         });
 
-        log('Hartico AdBlocker v1.0 inicializado');
+        log('AdBlockNitro v1.0 inicializado');
     }
 
     init();

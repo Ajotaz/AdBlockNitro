@@ -13,6 +13,8 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
     const toggle = document.getElementById('enabled-toggle');
+    const blocklistToggle = document.getElementById('blocklist-toggle');
+    const blocklistDesc = document.getElementById('blocklist-desc');
     const statusText = document.getElementById('status-text');
     const statusDot = document.querySelector('.status-dot');
     const adsBlockedEl = document.getElementById('ads-blocked');
@@ -39,12 +41,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let currentDomain = '';
     let currentMode = 'custom';
+    let blocklistMode = false;
 
     const MODE_DESCRIPTIONS = {
-        strict: 'Máxima protección: ads + trackers + cookies + fingerprinting',
+        strict: 'Maxima proteccion: ads + trackers + cookies + fingerprinting',
         relaxed: 'Solo anuncios obvios: Google Ads, banners, pop-ups',
         custom: 'Configura cada sitio individualmente'
     };
+
+    async function getCurrentTab() {
+        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        return tabs[0] || null;
+    }
 
     async function loadState() {
         try {
@@ -54,12 +62,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (e) { console.error('Error cargando estado:', e); }
     }
 
+    async function loadBlocklistMode() {
+        try {
+            const res = await chrome.runtime.sendMessage({ action: 'getBlocklistMode' });
+            blocklistMode = res.blocklistMode === true;
+            blocklistToggle.checked = blocklistMode;
+            updateBlocklistDesc();
+        } catch (e) { console.error('Error cargando blocklistMode:', e); }
+    }
+
+    function updateBlocklistDesc() {
+        if (blocklistMode) {
+            blocklistDesc.textContent = 'Activado: solo bloquea anuncios en los sitios que anadas a la lista de bloqueo. YouTube, Discord y el resto quedan libres.';
+            blocklistDesc.style.color = 'var(--accent-text)';
+        } else {
+            blocklistDesc.textContent = 'Desactivado: bloquea anuncios en todas las webs excepto las que anadas a la lista de permitidos.';
+            blocklistDesc.style.color = 'var(--text-muted)';
+        }
+    }
+
     function updateStatusBanner(enabled) {
         if (enabled) {
-            statusText.textContent = 'Protección activa';
+            statusText.textContent = 'Proteccion activa';
             statusDot.classList.add('active');
         } else {
-            statusText.textContent = 'Protección pausada';
+            statusText.textContent = 'Proteccion pausada';
             statusDot.classList.remove('active');
         }
     }
@@ -74,15 +101,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadSiteInfo() {
         try {
-            const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-            if (tabs[0] && tabs[0].url) {
-                const url = new URL(tabs[0].url);
+            const tab = await getCurrentTab();
+            if (tab && tab.url) {
+                const url = new URL(tab.url);
                 currentDomain = url.hostname;
                 siteDomainEl.textContent = currentDomain;
                 const res = await chrome.runtime.sendMessage({ action: 'getCurrentSiteMode', domain: currentDomain });
-                updateSiteUI(res.siteMode || 'default');
+                updateSiteUI(res.siteMode || 'default', res);
             } else {
-                siteDomainEl.textContent = 'Ninguna pestaña activa';
+                siteDomainEl.textContent = 'Ninguna pestana activa';
                 siteBadge.textContent = '--';
                 siteBadge.className = 'site-badge';
             }
@@ -107,27 +134,71 @@ document.addEventListener('DOMContentLoaded', async () => {
     function updateModeUI(mode) {
         modePills.forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
         modeDesc.textContent = MODE_DESCRIPTIONS[mode] || MODE_DESCRIPTIONS.custom;
-        siteCard.style.display = (mode === 'custom') ? 'block' : 'none';
+        siteCard.style.display = 'block';
     }
 
-    function updateSiteUI(siteMode) {
+    function updateSiteUI(siteMode, res) {
         siteBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.action === siteMode));
         siteBadge.className = 'site-badge';
-        if (siteMode === 'block') { siteBadge.textContent = 'Bloqueado'; siteBadge.classList.add('blocked'); }
-        else if (siteMode === 'allow') { siteBadge.textContent = 'Permitido'; siteBadge.classList.add('allowed'); }
-        else { siteBadge.textContent = 'Por defecto'; }
+
+        if (siteMode === 'block') {
+            siteBadge.textContent = 'Bloqueado';
+            siteBadge.classList.add('blocked');
+        } else if (siteMode === 'allow') {
+            siteBadge.textContent = 'Permitido';
+            siteBadge.classList.add('allowed');
+        } else {
+            if (blocklistMode) {
+                if (res && res.isBlacklisted) {
+                    siteBadge.textContent = 'En lista de bloqueo';
+                    siteBadge.classList.add('blocked');
+                } else {
+                    siteBadge.textContent = 'Libre (no en lista)';
+                }
+            } else {
+                if (res && res.isWhitelisted) {
+                    siteBadge.textContent = 'En lista de permitidos';
+                    siteBadge.classList.add('allowed');
+                } else {
+                    siteBadge.textContent = 'Por defecto';
+                }
+            }
+        }
     }
 
+    // === TOGGLE PRINCIPAL: pausar = auto-whitelist + recargar ===
     toggle.addEventListener('change', async () => {
         const enabled = toggle.checked;
         updateStatusBanner(enabled);
         try {
+            const tab = await getCurrentTab();
+            let domain = '';
+            if (tab && tab.url) {
+                try {
+                    domain = new URL(tab.url).hostname;
+                } catch(e) {}
+            }
+
+            if (!enabled && domain) {
+                // El usuario esta PAUSANDO: auto-whitelist este dominio
+                await chrome.runtime.sendMessage({ action: 'addToWhitelist', domain });
+            }
+
             await chrome.runtime.sendMessage({ action: 'setEnabled', enabled });
-            const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-            if (tabs[0] && tabs[0].id) {
-                chrome.tabs.reload(tabs[0].id);
+
+            if (tab && tab.id) {
+                chrome.tabs.reload(tab.id);
             }
         } catch (e) { console.error('Error cambiando estado:', e); }
+    });
+
+    blocklistToggle.addEventListener('change', async () => {
+        blocklistMode = blocklistToggle.checked;
+        updateBlocklistDesc();
+        try {
+            await chrome.runtime.sendMessage({ action: 'setBlocklistMode', blocklistMode });
+            loadSiteInfo();
+        } catch (e) { console.error('Error cambiando blocklistMode:', e); }
     });
 
     modePills.forEach(btn => {
@@ -143,7 +214,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     siteBtns.forEach(btn => {
         btn.addEventListener('click', async () => {
             const action = btn.dataset.action;
-            updateSiteUI(action);
+            updateSiteUI(action, null);
             try { await chrome.runtime.sendMessage({ action: 'setSiteMode', domain: currentDomain, siteMode: action }); }
             catch (e) { console.error('Error cambiando modo del sitio:', e); }
         });
@@ -155,7 +226,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             loadStats();
             btnReset.innerHTML = `<svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Reseteado`;
             setTimeout(() => {
-                btnReset.innerHTML = `<svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg> Resetear estadísticas`;
+                btnReset.innerHTML = `<svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg> Resetear estadisticas`;
             }, 1500);
         } catch (e) { console.error('Error reseteando stats:', e); }
     });
@@ -233,7 +304,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 whitelistInput.value = '';
                 loadLists();
             }
-        } catch (e) { console.error('Error añadiendo:', e); }
+        } catch (e) { console.error('Error anadiendo:', e); }
     });
 
     whitelistInput.addEventListener('keypress', (e) => {
@@ -249,7 +320,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 blacklistInput.value = '';
                 loadLists();
             }
-        } catch (e) { console.error('Error añadiendo:', e); }
+        } catch (e) { console.error('Error anadiendo:', e); }
     });
 
     blacklistInput.addEventListener('keypress', (e) => {
@@ -257,6 +328,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     await loadState();
+    await loadBlocklistMode();
     await loadMode();
     await loadSiteInfo();
     await loadStats();
