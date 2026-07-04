@@ -1,0 +1,182 @@
+/* ╔═══════════════════════════════════════════════════════════════╗
+   ║  AdBlockNitro v1.0.0                                          ║
+   ║  Copyright (c) 2026 Ajotaz — https://ajotaz.com             ║
+   ║  Contact: contact@ajotaz.com                                  ║
+   ║  GitHub: https://github.com/Ajotaz/AdBlockNitro              ║
+   ║  Licensed under the AdBlockNitro License Agreement.          ║
+   ║  See LICENSE for full terms.                                  ║
+   ╚═══════════════════════════════════════════════════════════════╝ */
+
+/* === Hartico AdBlocker v1.0 - CSS de Ocultacion + Proteccion de Clicks === */
+/* SOLO selectores especificos de anuncios conocidos. NADA generico. */
+
+/* === Google Ads especificos === */
+.adsbygoogle,
+.adsbygoogle-noablate,
+ins.adsbygoogle,
+[data-ad-client],
+[data-ad-slot],
+[data-google-query-id],
+iframe[name="googlefcPresent"],
+iframe#google_esf,
+
+/* Iframes de anuncios conocidos */
+iframe[src*="googlesyndication.com"],
+iframe[src*="doubleclick.net"],
+iframe[src*="googleadservices.com"],
+iframe[src*="google.com/pagead"],
+iframe[src*="googletagservices.com"],
+iframe[src*="amazon-adsystem.com"],
+iframe[src*="adnxs.com"],
+iframe[src*="criteo.com"],
+iframe[src*="criteo.net"],
+iframe[src*="pubmatic.com"],
+iframe[src*="openx.net"],
+iframe[src*="rubiconproject.com"],
+iframe[title="Advertisement"],
+
+/* IDs comunes de contenedores de ads */
+#google_ads_frame,
+#google_ads_frame1,
+#google_ads_frame2,
+#aswift_0,
+#aswift_1,
+#aswift_2,
+#ad_iframe,
+#mys-wrapper,
+[id*="google_ads"]:not([data-ved]):not(.g):not(.rg_i),
+[id*="__gtm"],
+
+/* Clases especificas de anuncios (NO genericas de 1 palabra) */
+.ad-wrapper,
+.ad-container,
+.ad-unit,
+.ad-slot,
+.ad-banner,
+.ad-box,
+.sponsored,
+.sponsored-content,
+.promoted,
+.promoted-content,
+.native-ad,
+.outbrain,
+.taboola,
+.revcontent,
+.mgid,
+
+/* Contenedores de anuncios genericos pero seguros */
+#google_center_div,
+#ad_unit,
+#ads,
+.ad_container,
+.google-ad,
+.google-ad-container,
+
+/* Consentimiento / Cookies */
+.fc-dialog-container,
+.fc-consent-root,
+.fc-dialog-overlay,
+#cookie-banner,
+#cookie-consent,
+.cc-banner,
+.cc-window,
+.cookie-notice,
+.cookie-banner,
+.gdpr-banner,
+.gdpr-notice,
+.onetrust-consent-sdk,
+#onetrust-consent-sdk,
+#onetrust-banner-sdk,
+.ot-sdk-show-settings,
+.cookiebot,
+#CybotCookiebotDialog,
+.CybotCookiebotDialog,
+.usercentrics-root,
+#usercentrics-root,
+.sourcepoint-modal,
+#sourcepoint-modal,
+
+/* Popups y overlays de anuncios */
+.popup[class*="ad"],
+.popunder[class*="ad"],
+.modal-ad,
+.ad-overlay,
+.overlay-ad,
+#popup[class*="ad"],
+#popunder[class*="ad"],
+
+/* Overlays vacios que bloquean clicks */
+div[style*="position: fixed"][style*="z-index"]:empty,
+div[style*="position: absolute"][style*="z-index"]:empty,
+div[style*="position:fixed"][style*="z-index"]:empty,
+div[style*="position:absolute"][style*="z-index"]:empty
+{
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-width: 0 !important;
+    max-height: 0 !important;
+    position: absolute !important;
+    z-index: -9999 !important;
+    pointer-events: none !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+}
+
+/* === PROTECCION: forzar pointer-events en contenido legitimo === */
+main,
+main *,
+article,
+article *,
+section:not([class*="ad"]):not([id*="ad"]),
+section:not([class*="ad"]):not([id*="ad"]) *,
+.content:not([class*="ad"]):not([id*="ad"]),
+.content:not([class*="ad"]):not([id*="ad"]) *,
+[role="main"],
+[role="main"] *,
+[role="article"],
+[role="article"] *,
+#content,
+#content *,
+#main,
+#main *,
+.main-content,
+.main-content *,
+.page-content,
+.page-content *,
+.site-content,
+.site-content *,
+.entry-content,
+.entry-content *,
+.post-content,
+.post-content *,
+.article-content,
+.article-content *
+{
+    pointer-events: auto !important;
+}
+
+/* === PROTEGER imagenes de busqueda y contenido legitimo === */
+img[src*="googleusercontent.com"],
+img[src*="gstatic.com"],
+.rg_i, .YQ4gaf, .bRMDJf,
+[data-ved] img,
+.yuRUbf img,
+.LC20lb,
+.VwiC3b
+{
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: auto !important;
+    height: auto !important;
+    position: static !important;
+    z-index: auto !important;
+    pointer-events: auto !important;
+}

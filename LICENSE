@@ -1,24 +1,202 @@
-This is free and unencumbered software released into the public domain.
+ADBLOCKNITRO LICENSE AGREEMENT
+Version 1.0, 2026
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+================================================================================
+IMPORTANTE: LEA ESTE ACUERDO DE LICENCIA COMPLETAMENTE ANTES DE USAR,
+DISTRIBUIR O MODIFICAR ESTE SOFTWARE.
+================================================================================
 
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
+Este Acuerdo de Licencia (el "Acuerdo") es un contrato legal entre Ajotaz
+(el "Licenciante") y cualquier persona o entidad (el "Licenciatario") que
+acceda, use, copie, modifique, distribuya o de cualquier otra manera interactúe
+con el software AdBlockNitro (el "Software").
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+Al descargar, instalar, usar o distribuir este Software, el Licenciatario
+acepta quedar vinculado por los términos de este Acuerdo. Si no está de
+acuerdo con estos términos, no debe usar, copiar, modificar ni distribuir
+este Software.
 
-For more information, please refer to <https://unlicense.org>
+================================================================================
+1. DEFINICIONES
+================================================================================
+
+1.1 "Software" se refiere al código fuente, binarios, documentación, recursos
+    gráficos y cualquier otro material incluido en el repositorio o paquete de
+    distribución de AdBlockNitro.
+
+1.2 "Uso Personal" se refiere a la instalación y ejecución del Software en
+    dispositivos propiedad del Licenciatario para fines no comerciales.
+
+1.3 "Distribución" se refiere a cualquier acto de compartir, publicar,
+    sublicenciar, vender, alquilar, prestar o de cualquier otra manera poner
+    el Software a disposición de terceros, ya sea de forma gratuita o de pago.
+
+1.4 "Uso Comercial" se refiere a cualquier uso del Software que genere ingresos
+    directos o indirectos, incluyendo pero no limitado a: venta, integración
+    en productos comerciales, uso en entornos empresariales, o como parte de
+    un servicio monetizado.
+
+1.5 "Modificación" se refiere a cualquier cambio, adaptación, traducción o
+    derivación del código fuente o binarios del Software.
+
+================================================================================
+2. CONCESIÓN DE LICENCIA
+================================================================================
+
+2.1 LICENCIA DE USO PERSONAL (GRATUITA)
+    El Licenciante concede al Licenciatario una licencia no exclusiva,
+    intransferible y revocable para usar el Software exclusivamente para
+    fines personales y no comerciales, sin costo alguno.
+
+    Condiciones del uso personal:
+    - El Licenciatario puede instalar el Software en dispositivos de su
+      propiedad.
+    - El Licenciatario NO puede distribuir el Software a terceros.
+    - El Licenciatario NO puede modificar el Software para redistribuirlo.
+    - El Licenciatario NO puede usar el Software en entornos comerciales.
+
+2.2 LICENCIA DE DISTRIBUCIÓN (DE PAGO)
+    Cualquier forma de Distribución del Software requiere una licencia de
+    distribución comercial válida otorgada por el Licenciante.
+
+    Tarifas de distribución:
+    - Distribución individual (hasta 100 usuarios finales): 500 EUR
+    - Distribución pequeña (101 - 1,000 usuarios finales): 2,000 EUR
+    - Distribución mediana (1,001 - 10,000 usuarios finales): 8,000 EUR
+    - Distribución grande (10,001 - 100,000 usuarios finales): 25,000 EUR
+    - Distribución empresarial (más de 100,000 usuarios finales): Negociar
+
+    La licencia de distribución incluye:
+    - Derecho a distribuir el Software en la forma acordada.
+    - Soporte técnico por 12 meses.
+    - Actualizaciones menores durante el período de soporte.
+
+2.3 LICENCIA DE USO COMERCIAL (DE PAGO)
+    Cualquier Uso Comercial del Software requiere una licencia comercial
+    válida otorgada por el Licenciante.
+
+    Tarifas de uso comercial:
+    - Pequeña empresa (hasta 50 empleados): 1,000 EUR/año
+    - Mediana empresa (51 - 250 empleados): 5,000 EUR/año
+    - Gran empresa (251 - 1,000 empleados): 15,000 EUR/año
+    - Corporación (más de 1,000 empleados): Negociar
+
+2.4 LICENCIA DE MODIFICACIÓN (DE PAGO)
+    Cualquier Modificación del Software con fines de distribución o uso
+    comercial requiere una licencia de modificación válida.
+
+    Tarifa de licencia de modificación: 3,000 EUR (pago único) más
+    regalías del 15% sobre ingresos netos derivados del software modificado.
+
+================================================================================
+3. RESTRICCIONES
+================================================================================
+
+3.1 SIN DISTRIBUCIÓN NO AUTORIZADA
+    Queda estrictamente prohibida la distribución del Software, en su forma
+    original o modificada, sin una licencia de distribución válida.
+
+3.2 SIN USO COMERCIAL NO AUTORIZADO
+    Queda estrictamente prohibido el uso del Software en entornos comerciales
+    sin una licencia comercial válida.
+
+3.3 SIN MODIFICACIÓN PARA REDISTRIBUCIÓN
+    Queda estrictamente prohibido modificar el Software con la intención de
+    distribuirlo, venderlo o integrarlo en otros productos sin autorización
+    previa por escrito del Licenciante.
+
+3.4 SIN INGENIERÍA INVERSA
+    El Licenciatario no puede realizar ingeniería inversa, descompilar,
+    desensamblar ni intentar de cualquier otra manera descubrir el código
+    fuente del Software, excepto en la medida en que dichas actividades estén
+    expresamente permitidas por la ley aplicable.
+
+3.5 SIN ELIMINACIÓN DE ATRIBUTOS
+    El Licenciatario no puede eliminar, alterar ni ocultar avisos de copyright,
+    marcas registradas, créditos de autor ni ninguna otra identificación del
+    Software.
+
+3.6 SIN GARANTÍAS IMPLÍCITAS DE REDISTRIBUCIÓN
+    El Licenciatario no puede representar ni dar a entender que tiene derecho
+    a sublicenciar, vender o distribuir el Software sin autorización expresa.
+
+================================================================================
+4. PROPIEDAD INTELECTUAL
+================================================================================
+
+4.1 El Software y todos los derechos de propiedad intelectual asociados son
+    y seguirán siendo propiedad exclusiva del Licenciante.
+
+4.2 Este Acuerdo no transfiere ningún título de propiedad ni derechos de
+    autor al Licenciatario, excepto los derechos de uso expresamente
+    concedidos en este documento.
+
+4.3 El Licenciatario reconoce que el Software contiene secretos comerciales
+    valiosos y se compromete a proteger dicha confidencialidad.
+
+================================================================================
+5. GARANTÍA Y RESPONSABILIDAD
+================================================================================
+
+5.1 EL SOFTWARE SE PROPORCIONA "TAL CUAL", SIN GARANTÍA DE NINGÚN TIPO,
+    EXPRESA O IMPLÍCITA, INCLUYENDO PERO NO LIMITADO A GARANTÍAS DE
+    COMERCIABILIDAD, IDONEIDAD PARA UN PROPÓSITO PARTICULAR Y NO INFRACCIÓN.
+
+5.2 EN NINGÚN CASO EL LICENCIANTE SERÁ RESPONSABLE POR DAÑOS DIRECTOS,
+    INDIRECTOS, INCIDENTALES, ESPECIALES, EJEMPLARES O CONSECUENTES
+    (INCLUYENDO PÉRDIDA DE DATOS, LUCRO CESANTE O INTERRUPCIÓN DE NEGOCIO)
+    DERIVADOS DEL USO O INCAPACIDAD DE USO DEL SOFTWARE.
+
+================================================================================
+6. TERMINACIÓN
+================================================================================
+
+6.1 Este Acuerdo terminará automáticamente si el Licenciatario incumple
+    cualquiera de sus términos.
+
+6.2 Al término, el Licenciatario deberá destruir todas las copias del Software
+    en su posesión y cesar inmediatamente todo uso.
+
+6.3 Las secciones 4, 5, 7 y 8 sobrevivirán a la terminación de este Acuerdo.
+
+================================================================================
+7. LEY APLICABLE Y JURISDICCIÓN
+================================================================================
+
+7.1 Este Acuerdo se regirá e interpretará de acuerdo con las leyes de España.
+
+7.2 Cualquier disputa derivada de este Acuerdo se someterá a la jurisdicción
+    exclusiva de los tribunales competentes de España.
+
+================================================================================
+8. DISPOSICIONES GENERALES
+================================================================================
+
+8.1 Este Acuerdo constituye el acuerdo completo entre las partes respecto al
+    Software y reemplaza cualquier acuerdo previo o contemporáneo.
+
+8.2 Si alguna disposición de este Acuerdo se considera inválida o
+    inaplicable, las demás disposiciones permanecerán en pleno vigor.
+
+8.3 El hecho de que el Licenciante no ejerza un derecho no constituirá una
+    renuncia a dicho derecho.
+
+8.4 El Licenciatario no puede ceder ni transferir este Acuerdo sin el
+    consentimiento previo por escrito del Licenciante.
+
+================================================================================
+9. CONTACTO PARA LICENCIAS
+================================================================================
+
+Para solicitar una licencia comercial, de distribución o de modificación:
+
+  Email: contact@ajotaz.com
+  Web: https://ajotaz.com
+  GitHub: https://github.com/Ajotaz/AdBlockNitro
+
+Las tarifas están sujetas a cambio. El Licenciante se reserva el derecho de
+modificar las tarifas con previo aviso de 30 días.
+
+================================================================================
+Copyright (c) 2026 Ajotaz (https://ajotaz.com). Todos los derechos reservados.
+================================================================================
